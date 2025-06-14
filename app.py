@@ -495,27 +495,25 @@ if __name__ == '__main__':
             
             <!-- Multiple Map Options -->
             <div class="map-option">
-                <h4>🗺️ Quick Map Access</h4>
+                <h4>🗺️ For Detailed Satellite View (if needed)</h4>
                 <div class="map-links">
-                    <button class="btn btn-primary" onclick="openInGoogleMaps()">🔍 Google Maps</button>
-                    <button class="btn btn-info" onclick="openInBingMaps()">🌍 Bing Maps</button>
-                    <button class="btn btn-secondary" onclick="openInOpenStreetMap()">📍 OpenStreetMap</button>
-                    <button class="btn btn-success" onclick="openStreetView()">👁️ Street View</button>
+                    <button class="btn btn-primary" onclick="openInGoogleMaps()">🛰️ Google Satellite</button>
+                    <button class="btn btn-info" onclick="openInBingMaps()">🌍 Bing Satellite</button>
                 </div>
-                <small style="color: #6c757d;">Click any button to open current location in a new tab</small>
+                <small style="color: #6c757d;">Use these only if you need higher resolution satellite imagery</small>
             </div>
             
             <!-- Embedded Maps Grid -->
             <div class="maps-container">
                 <div>
-                    <h4 style="margin: 0 0 10px 0;">📍 OpenStreetMap (Embedded)</h4>
+                    <h4 style="margin: 0 0 10px 0;">🗺️ Area Overview (Interactive)</h4>
                     <iframe id="osm-frame" class="maps-frame" src="" allowfullscreen="" loading="lazy" 
-                            title="OpenStreetMap showing current scanning location"></iframe>
+                            title="Area map showing current scanning location"></iframe>
                 </div>
                 <div>
-                    <h4 style="margin: 0 0 10px 0;">🌍 Alternative View</h4>
+                    <h4 style="margin: 0 0 10px 0;">📋 Scanning Guide & Satellite Access</h4>
                     <iframe id="alt-frame" class="maps-frame" src="" allowfullscreen="" loading="lazy" 
-                            title="Alternative map view"></iframe>
+                            title="Scanning guide and satellite map access"></iframe>
                 </div>
             </div>
             
@@ -695,19 +693,17 @@ if __name__ == '__main__':
         
         function openInGoogleMaps() {
             if (currentPoint) {
-                window.open(currentPoint.google_maps_url, '_blank');
+                // Fixed Google Maps URL for satellite view
+                const googleSatelliteUrl = `https://www.google.com/maps/@${currentPoint.lat},${currentPoint.lon},19z/data=!3m1!1e3`;
+                window.open(googleSatelliteUrl, '_blank');
             }
         }
         
         function openInBingMaps() {
             if (currentPoint) {
-                window.open(currentPoint.bing_maps_url, '_blank');
-            }
-        }
-        
-        function openInOpenStreetMap() {
-            if (currentPoint) {
-                window.open(currentPoint.openstreetmap_url, '_blank');
+                // Bing Maps satellite view
+                const bingUrl = `https://www.bing.com/maps?cp=${currentPoint.lat}~${currentPoint.lon}&lvl=19&style=a`;
+                window.open(bingUrl, '_blank');
             }
         }
         
@@ -772,13 +768,71 @@ if __name__ == '__main__':
         }
         
         function updateEmbeddedMaps(point) {
-            // Update OpenStreetMap iframe
-            const osmUrl = `https://www.openstreetmap.org/export/embed.html?bbox=${point.lon-0.005},${point.lat-0.005},${point.lon+0.005},${point.lat+0.005}&layer=mapnik&marker=${point.lat},${point.lon}`;
+            // Update OpenStreetMap iframe with tighter zoom for building detail
+            const osmUrl = `https://www.openstreetmap.org/export/embed.html?bbox=${point.lon-0.001},${point.lat-0.001},${point.lon+0.001},${point.lat+0.001}&layer=mapnik&marker=${point.lat},${point.lon}`;
             document.getElementById('osm-frame').src = osmUrl;
             
-            // Update alternative map (Bing Maps embed)
-            const bingEmbedUrl = `https://www.bing.com/maps/embed?h=400&w=500&cp=${point.lat}~${point.lon}&lvl=18&typ=s&sty=r&src=SHELL&FORM=MBEDV8`;
-            document.getElementById('alt-frame').src = bingEmbedUrl;
+            // Create satellite guidance content for second frame
+            const satelliteGuideHtml = `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <style>
+                        body { margin: 0; padding: 20px; font-family: Arial, sans-serif; background: #f8f9fa; }
+                        .location-info { text-align: center; margin-bottom: 20px; }
+                        .coordinates { 
+                            font-family: monospace; font-size: 1.2em; color: #495057; 
+                            background: white; padding: 10px; border-radius: 5px; margin: 10px 0;
+                        }
+                        .satellite-links { margin: 20px 0; }
+                        .sat-link { 
+                            display: inline-block; padding: 12px 24px; background: #007bff; 
+                            color: white; text-decoration: none; border-radius: 6px; margin: 5px;
+                            font-weight: 600;
+                        }
+                        .sat-link:hover { background: #0056b3; }
+                        .guide { 
+                            background: white; padding: 20px; border-radius: 8px; 
+                            border-left: 4px solid #28a745; margin-top: 20px;
+                        }
+                        .checklist { text-align: left; margin-top: 15px; }
+                        .checklist li { margin: 8px 0; }
+                    </style>
+                </head>
+                <body>
+                    <div class="location-info">
+                        <h3 style="color: #495057; margin: 0;">📍 Current Scanning Location</h3>
+                        <div class="coordinates">${point.lat}, ${point.lon}</div>
+                        <div style="color: #6c757d;">${point.distance_from_center} miles from center</div>
+                    </div>
+                    
+                    <div class="satellite-links">
+                        <a href="https://www.google.com/maps/@${point.lat},${point.lon},19z/data=!3m1!1e3" 
+                           target="_blank" class="sat-link">🛰️ Google Satellite</a>
+                        <a href="https://www.bing.com/maps?cp=${point.lat}~${point.lon}&lvl=19&style=a" 
+                           target="_blank" class="sat-link">🌍 Bing Satellite</a>
+                    </div>
+                    
+                    <div class="guide">
+                        <h4 style="color: #28a745; margin-top: 0;">🔍 Storage Facility Checklist</h4>
+                        <div class="checklist">
+                            <li>✅ Multiple rectangular buildings in organized rows</li>
+                            <li>✅ Small dark rectangles along buildings (storage doors)</li>
+                            <li>✅ Internal road network between building rows</li>
+                            <li>✅ Large paved customer parking areas</li>
+                            <li>✅ Security fencing around facility perimeter</li>
+                            <li>✅ Single controlled entry/exit point</li>
+                        </div>
+                        <div style="margin-top: 15px; padding: 10px; background: #e7f3ff; border-radius: 5px;">
+                            <strong>💡 Tip:</strong> Look for buildings that are long and narrow, not square. 
+                            Storage facilities have a very distinctive "row" pattern when viewed from above.
+                        </div>
+                    </div>
+                </body>
+                </html>
+            `;
+            
+            document.getElementById('alt-frame').src = 'data:text/html;charset=utf-8,' + encodeURIComponent(satelliteGuideHtml);
         }
         
         async function addBookmark() {
