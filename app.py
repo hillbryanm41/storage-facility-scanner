@@ -506,14 +506,14 @@ if __name__ == '__main__':
             <!-- Embedded Maps Grid -->
             <div class="maps-container">
                 <div>
-                    <h4 style="margin: 0 0 10px 0;">🗺️ Area Overview (Interactive)</h4>
+                    <h4 style="margin: 0 0 10px 0;">🗺️ Area Navigation (Building Outlines)</h4>
                     <iframe id="osm-frame" class="maps-frame" src="" allowfullscreen="" loading="lazy" 
-                            title="Area map showing current scanning location"></iframe>
+                            title="Area map showing building outlines and roads"></iframe>
                 </div>
                 <div>
-                    <h4 style="margin: 0 0 10px 0;">📋 Scanning Guide & Satellite Access</h4>
+                    <h4 style="margin: 0 0 10px 0;">🛰️ Satellite Access & Scanning Guide</h4>
                     <iframe id="alt-frame" class="maps-frame" src="" allowfullscreen="" loading="lazy" 
-                            title="Scanning guide and satellite map access"></iframe>
+                            title="Satellite access and scanning guide"></iframe>
                 </div>
             </div>
             
@@ -768,11 +768,11 @@ if __name__ == '__main__':
         }
         
         function updateEmbeddedMaps(point) {
-            // Update OpenStreetMap iframe with tighter zoom for building detail
+            // Keep the OpenStreetMap for navigation reference (shows roads, building outlines)
             const osmUrl = `https://www.openstreetmap.org/export/embed.html?bbox=${point.lon-0.001},${point.lat-0.001},${point.lon+0.001},${point.lat+0.001}&layer=mapnik&marker=${point.lat},${point.lon}`;
             document.getElementById('osm-frame').src = osmUrl;
             
-            // Create satellite guidance content for second frame
+            // Enhanced satellite access panel
             const satelliteGuideHtml = `
                 <!DOCTYPE html>
                 <html>
@@ -784,48 +784,67 @@ if __name__ == '__main__':
                             font-family: monospace; font-size: 1.2em; color: #495057; 
                             background: white; padding: 10px; border-radius: 5px; margin: 10px 0;
                         }
-                        .satellite-links { margin: 20px 0; }
-                        .sat-link { 
-                            display: inline-block; padding: 12px 24px; background: #007bff; 
-                            color: white; text-decoration: none; border-radius: 6px; margin: 5px;
-                            font-weight: 600;
+                        .satellite-section { 
+                            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                            color: white; padding: 20px; border-radius: 8px; margin: 15px 0;
+                            text-align: center;
                         }
-                        .sat-link:hover { background: #0056b3; }
+                        .sat-link { 
+                            display: inline-block; padding: 15px 25px; background: rgba(255,255,255,0.2); 
+                            color: white; text-decoration: none; border-radius: 6px; margin: 8px;
+                            font-weight: 600; border: 2px solid rgba(255,255,255,0.3);
+                            transition: all 0.3s ease;
+                        }
+                        .sat-link:hover { 
+                            background: rgba(255,255,255,0.3); 
+                            border-color: rgba(255,255,255,0.6);
+                            transform: translateY(-2px);
+                        }
                         .guide { 
                             background: white; padding: 20px; border-radius: 8px; 
                             border-left: 4px solid #28a745; margin-top: 20px;
                         }
                         .checklist { text-align: left; margin-top: 15px; }
-                        .checklist li { margin: 8px 0; }
+                        .checklist li { margin: 8px 0; font-size: 14px; }
+                        .workflow-tip {
+                            background: #fff3cd; padding: 15px; border-radius: 6px; 
+                            border-left: 4px solid #ffc107; margin-top: 15px;
+                        }
                     </style>
                 </head>
                 <body>
                     <div class="location-info">
-                        <h3 style="color: #495057; margin: 0;">📍 Current Scanning Location</h3>
+                        <h3 style="color: #495057; margin: 0;">📍 Current Location</h3>
                         <div class="coordinates">${point.lat}, ${point.lon}</div>
                         <div style="color: #6c757d;">${point.distance_from_center} miles from center</div>
                     </div>
                     
-                    <div class="satellite-links">
+                    <div class="satellite-section">
+                        <h4 style="margin: 0 0 15px 0;">🛰️ HIGH-RESOLUTION SATELLITE</h4>
+                        <p style="margin: 0 0 20px 0; opacity: 0.9;">Click for detailed building view:</p>
                         <a href="https://www.google.com/maps/@${point.lat},${point.lon},19z/data=!3m1!1e3" 
-                           target="_blank" class="sat-link">🛰️ Google Satellite</a>
+                           target="_blank" class="sat-link">🔍 Google Satellite</a>
                         <a href="https://www.bing.com/maps?cp=${point.lat}~${point.lon}&lvl=19&style=a" 
                            target="_blank" class="sat-link">🌍 Bing Satellite</a>
                     </div>
                     
+                    <div class="workflow-tip">
+                        <strong>💡 Scanning Workflow:</strong><br>
+                        1. Check left map for building clusters<br>
+                        2. Click satellite buttons above for detail<br>
+                        3. Look for storage facility patterns<br>
+                        4. Bookmark if found!
+                    </div>
+                    
                     <div class="guide">
-                        <h4 style="color: #28a745; margin-top: 0;">🔍 Storage Facility Checklist</h4>
+                        <h4 style="color: #28a745; margin-top: 0;">🔍 Storage Facility Signs</h4>
                         <div class="checklist">
-                            <li>✅ Multiple rectangular buildings in organized rows</li>
-                            <li>✅ Small dark rectangles along buildings (storage doors)</li>
-                            <li>✅ Internal road network between building rows</li>
-                            <li>✅ Large paved customer parking areas</li>
-                            <li>✅ Security fencing around facility perimeter</li>
-                            <li>✅ Single controlled entry/exit point</li>
-                        </div>
-                        <div style="margin-top: 15px; padding: 10px; background: #e7f3ff; border-radius: 5px;">
-                            <strong>💡 Tip:</strong> Look for buildings that are long and narrow, not square. 
-                            Storage facilities have a very distinctive "row" pattern when viewed from above.
+                            <li>✅ <strong>Rows of buildings:</strong> Multiple parallel structures</li>
+                            <li>✅ <strong>Garage doors:</strong> Small dark rectangles along buildings</li>
+                            <li>✅ <strong>Internal roads:</strong> Drive lanes between building rows</li>
+                            <li>✅ <strong>Parking areas:</strong> Large paved customer spaces</li>
+                            <li>✅ <strong>Security fence:</strong> Perimeter fencing visible</li>
+                            <li>✅ <strong>Single entrance:</strong> Controlled entry/exit point</li>
                         </div>
                     </div>
                 </body>
